@@ -1,9 +1,8 @@
-package com.idan.pokemon_hub
+package com.idan.pokemon_hub.controller
 
 import com.idan.pokemon_hub.model.Pokemon
 import com.idan.pokemon_hub.service.PokemonService
 import io.mockk.every
-import io.mockk.Runs
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -14,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.idan.pokemon_hub.PokemonController
 import java.net.URL
 
 @WebMvcTest(PokemonController::class)
