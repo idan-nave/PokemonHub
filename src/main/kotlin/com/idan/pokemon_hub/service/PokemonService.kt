@@ -43,7 +43,7 @@ class PokemonService(private val pokemonRepository: PokemonRepository) {
     }
 
     private fun isValidType(type: String): Boolean {
-        val typeRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex()
-        return typeRegex.matches(type)
+        val validTypes = setOf("grass", "poison", "fire", "water", "bug", "normal", "electric", "ground", "fairy", "fighting", "psychic", "rock", "ghost", "ice", "dragon", "dark", "steel", "flying")
+        return type.split("/").all { it in validTypes }
     }
 }

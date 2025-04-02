@@ -18,7 +18,7 @@ version = '0.0.1-SNAPSHOT'  // Define the version of the project
 java {
 	toolchain {
 		// Specify the Java version for compiling
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -52,7 +52,8 @@ dependencies {
 	testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 	testImplementation("org.mockito:mockito-all:1.10.19")
 	testImplementation("io.mockk:mockk:1.13.17") // The latest version of Mockito for Kotlin
-	testImplementation("org.mockito:mockito-core:5.16.1") // Mockito core for mocking
+	testImplementation("org.mockito:mockito-core:5.2.0") // Mockito core for mocking
+//	testImplementation("org.mockito:mockito-inline:5.2.0")
 }
 
 kotlin {
@@ -65,4 +66,11 @@ kotlin {
 tasks.named('test') {
 	// Enable JUnit Platform for running tests (JUnit 5)
 	useJUnitPlatform()
+}
+
+test {
+	jvmArgs += [
+			'--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+			'--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED'
+	]
 }

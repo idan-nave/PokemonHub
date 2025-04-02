@@ -1,6 +1,5 @@
 package com.idan.pokemon_hub.service
 
-
 import com.idan.pokemon_hub.model.Pokemon
 import com.idan.pokemon_hub.repository.PokemonRepository
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -14,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException
 import org.springframework.http.HttpStatus
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.times
+import java.net.URI
 import java.net.URL
 
 class PokemonServiceTest {
@@ -26,7 +26,7 @@ class PokemonServiceTest {
         val baseUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
 
         // Arrange
-        val pokemon = Pokemon(1, "Bulbasaur", "grass/poison", URL("$baseUrl}1.png"))
+        val pokemon = Pokemon(1, "Bulbasaur", "grass/poison", URI("${baseUrl}1.png").toURL())
         val pokemonsList = listOf(pokemon)
         whenever(pokemonRepository.findAll()).thenReturn(pokemonsList)
 
@@ -42,18 +42,21 @@ class PokemonServiceTest {
         val baseUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
 
         // Arrange
-        val pokemon = Pokemon(1, "Bulbasaur", "grass/poison", URL("$baseUrl/1.png"))
+        val pokemon = Pokemon(1, "Bulbasaur", "grass/poison", URI("$baseUrl/1.png").toURL())
         whenever(pokemonRepository.findByPokedex(1)).thenReturn(pokemon)
         whenever(pokemonRepository.findByPokedex(2)).thenReturn(null)
 
         // Act
         val result = pokemonService.getPokemonByPokedex(1)
-        val result2 = pokemonService.getPokemonByPokedex(2)
+        val exception = assertThrows<ResponseStatusException> {
+            pokemonService.getPokemonByPokedex(2)
+        }
 
         // Assert
         assertNotNull(result)
-        assertEquals("Bulbasaur", result?.name)
-        assertNull(result2)
+        assertEquals("Bulbasaur", result.name)
+        assertEquals(HttpStatus.NOT_FOUND, exception.statusCode)
+        assertEquals("Pokemon not found", exception.reason)
     }
 
 
@@ -62,18 +65,18 @@ class PokemonServiceTest {
         val baseUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
 
         // Arrange
-        val pokemon = Pokemon(1, "Bulbasaur", "grass/poison", URL("$baseUrl/1.png"))
-        val updatedPokemon = Pokemon(1, "Updated Name", "grass/poison", URL("$baseUrl/1.png"))
+        val pokemon = Pokemon(1, "Bulbasaur", "grass/poison", URI("$baseUrl/1.png").toURL())
+        val updatedPokemon = Pokemon(1, "Updated Name", "grass/poison", URI("$baseUrl/1.png").toURL())
         whenever(pokemonRepository.findByPokedex(1)).thenReturn(pokemon)
-        whenever(pokemonRepository.save(pokemon)).thenReturn(updatedPokemon)
+        whenever(pokemonRepository.save(updatedPokemon)).thenReturn(updatedPokemon)
 
         // Act
         val result = pokemonService.updatePokemon(1, updatedPokemon)
 
         // Assert
         assertNotNull(result)
-        assertEquals("Updated Name", result?.name)
-        assertEquals("grass/poison", result?.type)
+        assertEquals("Updated Name", result.name)
+        assertEquals("grass/poison", result.type)
     }
 
     @Test
@@ -81,7 +84,7 @@ class PokemonServiceTest {
         val baseUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
 
         // Arrange
-        val pokemon = Pokemon(1, "Bulbasaur", "grass/poison", URL("$baseUrl}1.png"))
+        val pokemon = Pokemon(1, "Bulbasaur", "grass/poison", URI("${baseUrl}1.png").toURL())
         val invalidPokemon1 = Pokemon(1, "", "grass/poison")
         val invalidPokemon2 = Pokemon(1, "Bulbasaur", "invalid-type")
 

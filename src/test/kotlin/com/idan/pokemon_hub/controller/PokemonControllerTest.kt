@@ -14,6 +14,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.idan.pokemon_hub.PokemonController
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import java.net.URI
 import java.net.URL
 
 @WebMvcTest(PokemonController::class)
@@ -22,12 +24,12 @@ class PokemonControllerTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
 
-    private val pokemonService: PokemonService = mock()  // Mocking the service using Mockito
+    private val pokemonService: PokemonService = mock()
 
     private val objectMapper = jacksonObjectMapper()
 
     private val baseUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
-    private val testPokemon = Pokemon(1, "Bulbasaur", "grass/poison", URL("$baseUrl/1.png"))
+    private val testPokemon = Pokemon(1, "Bulbasaur", "grass/poison", URI("$baseUrl/1.png").toURL())
 
     @BeforeEach
     fun setUp() {
