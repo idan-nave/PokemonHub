@@ -2,21 +2,21 @@ package com.idan.pokemon_hub.controller
 
 import com.idan.pokemon_hub.model.Pokemon
 import com.idan.pokemon_hub.service.PokemonService
-import io.mockk.every
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.idan.pokemon_hub.PokemonController
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import java.net.URI
-import java.net.URL
 
 @WebMvcTest(PokemonController::class)
 class PokemonControllerTest {
@@ -24,7 +24,8 @@ class PokemonControllerTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
 
-    private val pokemonService: PokemonService = mock()
+    @MockitoBean
+    private lateinit var pokemonService: PokemonService
 
     private val objectMapper = jacksonObjectMapper()
 
@@ -33,14 +34,18 @@ class PokemonControllerTest {
 
     @BeforeEach
     fun setUp() {
-        // Use mock behavior
-        every { pokemonService.getAllPokemons() } returns listOf(testPokemon)
-        every { pokemonService.getPokemonByPokedex(1) } returns testPokemon
-        every { pokemonService.getPokemonByPokedex(2) } returns null
-        every { pokemonService.updatePokemon(1, any()) } returns testPokemon.copy(name = "Updated Name")
-        every { pokemonService.updatePokemon(2, any()) } returns null
-        every { pokemonService.deletePokemon(any<Long>()) } returns Unit
+        whenever(pokemonService.getAllPokemons()).thenReturn(listOf(testPokemon))
+
+        whenever(pokemonService.getPokemonByPokedex(any())).thenAnswer { invocation ->
+            val id = invocation.getArgument<Long>(0)
+            if (id == 1L) testPokemon else null
+        }
+
+        whenever(pokemonService.updatePokemon(any(), any())).thenReturn(testPokemon.copy(name = "Updated Name"))
+        doNothing().whenever(pokemonService).deletePokemon(any())
     }
+
+
 
     @Test
     fun testGetAllPokemons() {

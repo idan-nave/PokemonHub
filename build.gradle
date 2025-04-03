@@ -1,70 +1,43 @@
 plugins {
-	// Kotlin plugin for JVM
 	id 'org.jetbrains.kotlin.jvm' version '1.9.25'
-
-	// Spring plugin for Kotlin support
 	id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25'
-
-	// Spring Boot plugin for bootstrapping Spring applications
 	id 'org.springframework.boot' version '3.4.4'
-
-	// Dependency management plugin for Spring dependencies
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'com.idan'  // Define the group ID (package)
-version = '0.0.1-SNAPSHOT'  // Define the version of the project
+group = 'com.idan'
+version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		// Specify the Java version for compiling
 		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
 repositories {
-	// Use Maven Central for resolving dependencies
 	mavenCentral()
 }
 
 dependencies {
-	// Spring Boot web starter for RESTful APIs or web applications
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-
-	// Kotlin module for Jackson serialization
 	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
-
-	// Kotlin reflection for Spring integration
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
-
-	// Spring Boot Data JPA for database interaction
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-	// H2 Database dependency (add version explicitly)
 	testImplementation 'com.h2database:h2:2.3.232'
-
-	// Testing dependencies
-	testImplementation 'org.springframework.boot:spring-boot-starter-test' // Spring Boot test starter
-	testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5' // Kotlin support for JUnit 5
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // JUnit Platform Launcher (runtime)
-
-	// Mockito Kotlin dependencies
-	testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-	testImplementation("org.mockito:mockito-all:1.10.19")
-	testImplementation("io.mockk:mockk:1.13.17") // The latest version of Mockito for Kotlin
-	testImplementation("org.mockito:mockito-core:5.2.0") // Mockito core for mocking
-//	testImplementation("org.mockito:mockito-inline:5.2.0")
+	testImplementation 'org.springframework.boot:spring-boot-starter-test' // Includes Mockito 5.x
+	testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.mockito.kotlin:mockito-kotlin:5.4.0' // Compatible with Mockito 5.x
+	testImplementation("io.mockk:mockk:1.12.4")
 }
 
 kotlin {
-	// Add additional Kotlin compiler arguments
 	compilerOptions {
-		freeCompilerArgs.addAll '-Xjsr305=strict' // Strict null checks
+		freeCompilerArgs.addAll '-Xjsr305=strict'
 	}
 }
 
 tasks.named('test') {
-	// Enable JUnit Platform for running tests (JUnit 5)
 	useJUnitPlatform()
 }
 

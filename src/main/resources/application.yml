@@ -1,29 +1,26 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb  # In-memory database (no file storage)
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
     driverClassName: org.h2.Driver
     username: sa
-    password: password
-    platform: h2
+    password:
     hikari:
       maximum-pool-size: 10
-    # Hibernate DDL mode
-    ddl-auto: update  # Use `create` to recreate the schema on each application startup, `update` to automatically update schema
-
-  h2:
-    console:
-      enabled: true  # Enable the H2 console for easy database browsing
-      path: /h2-console  # Path to access the H2 console
 
   jpa:
     hibernate:
-      ddl-auto: update  # Automatically update the schema
-    show-sql: true  # Show SQL queries in the console
+      ddl-auto: create-drop  # Choose one: 'create-drop' or 'update'
+    show-sql: true
     properties:
       hibernate:
-        format_sql: true  # Pretty print SQL queries
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 
   logging:
     level:
-      org.hibernate.SQL: DEBUG  # Enable logging of SQL queries
-      org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # Show bound values in the SQL queries
+      org.hibernate.SQL: DEBUG
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
