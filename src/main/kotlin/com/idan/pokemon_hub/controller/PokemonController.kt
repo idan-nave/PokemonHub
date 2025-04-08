@@ -1,33 +1,30 @@
-package com.idan.pokemon_hub
+package com.idan.pokemon_hub.controller
 
 import com.idan.pokemon_hub.model.Pokemon
 import com.idan.pokemon_hub.service.PokemonService
-import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/pokemons")
 class PokemonController(private val pokemonService: PokemonService) {
 
+    // BE ADVISED- a Global Exception Handler is handling the custom exceptions globally via @ControllerAdvice
     @GetMapping
     fun getAll(): List<Pokemon> {
         return pokemonService.getAll()
     }
 
     @GetMapping("/{pokedex}")
-    fun geByPokedex(@PathVariable pokedex: Long): Pokemon? {
-        return pokemonService.geByPokedex(pokedex) ?: throw ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Pokemon not found"
-        )
+    fun getByPokedex(@PathVariable pokedex: Long): Pokemon {
+        // Let the service throw PokemonNotFoundException if not found, which will be caught by @ControllerAdvice
+        return pokemonService.getByPokedex(pokedex)
     }
 
     @PutMapping("/{pokedex}")
-    fun updateByPokedex(@PathVariable pokedex: Long, @RequestBody pokemon: Pokemon): Pokemon? {
-        return pokemonService.updateByPokedex(pokedex, pokemon) ?: throw ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Pokemon not found"
-        )
+    fun updateByPokedex(@PathVariable pokedex: Long, @RequestBody pokemon: Pokemon): Pokemon {
+        // Let the service throw PokemonNotFoundException if not found, which will be caught by @ControllerAdvice
+        return pokemonService.updateByPokedex(pokedex, pokemon)
     }
 
     @DeleteMapping("/{pokedex}")

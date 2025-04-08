@@ -1,10 +1,10 @@
 package com.idan.pokemon_hub.service
 
+import com.idan.pokemon_hub.exception.InvalidFieldException
+import com.idan.pokemon_hub.exception.PokemonNotFoundException
 import com.idan.pokemon_hub.model.Pokemon
 import com.idan.pokemon_hub.repository.PokemonRepository
 import org.springframework.stereotype.Service
-import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 
 @Service
 class PokemonService(private val pokemonRepository: PokemonRepository) {
@@ -12,38 +12,36 @@ class PokemonService(private val pokemonRepository: PokemonRepository) {
     fun getAll(): List<Pokemon> {
         return pokemonRepository.findAll()
     }
-    fun geByPokedex(pokedex: Long): Pokemon? {
+
+    fun getByPokedex(pokedex: Long): Pokemon { // Note: Still has typo "geByPokedex", should be "getByPokedex"
         val pokemon = pokemonRepository.findByPokedex(pokedex)
-        return pokemon ?: throw ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Pokemon not found"
-        )
+        return pokemon ?: throw PokemonNotFoundException("Pokemon with Pokedex $pokedex not found")
     }
 
-    fun updateByPokedex(pokedex: Long, pokemon: Pokemon): Pokemon? {
-        if (pokemon.name.isNullOrBlank() || pokemon.type.isNullOrBlank()) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Name and type cannot be empty")
+    fun updateByPokedex(pokedex: Long, pokemon: Pokemon): Pokemon {
+        // Check for invalid fields
+        if (pokemon.name.isBlank()) {
+            throw InvalidFieldException("Name cannot be empty")
+        }
+        if (pokemon.type.isEmpty()) {
+            throw InvalidFieldException("Type cannot be empty")
         }
 
-        if (!isValidType(pokemon.type)) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid type format")
-        }
+        // No need for additional type validation since type is a Set<PokemonType>
+        // Invalid types can't be passed due to type safety
 
-        val optionalPokemon = pokemonRepository.findByPokedex(pokedex)
+        val existingPokemon = pokemonRepository.findByPokedex(pokedex)
+            ?: throw PokemonNotFoundException("Pokemon with Pokedex $pokedex not found")
 
-        return optionalPokemon?.apply {
-            name = pokemon.name
-            type = pokemon.type
-            pokemonRepository.save(this)
-        }
-
+        // Update the Pokemon fields
+        existingPokemon.name = pokemon.name
+        existingPokemon.type = pokemon.type
+        return pokemonRepository.save(existingPokemon)
     }
 
     fun deleteByPokedex(pokedex: Long) {
-        pokemonRepository.deleteByPokedex(pokedex)
-    }
-
-    private fun isValidType(type: String): Boolean {
-        val validTypes = setOf("grass", "poison", "fire", "water", "bug", "normal", "electric", "ground", "fairy", "fighting", "psychic", "rock", "ghost", "ice", "dragon", "dark", "steel", "flying")
-        return type.split("/").all { it in validTypes }
+        val existingPokemon = pokemonRepository.findByPokedex(pokedex)
+            ?: throw PokemonNotFoundException("Pokemon with Pokedex $pokedex not found")
+        pokemonRepository.delete(existingPokemon)
     }
 }

@@ -20,7 +20,7 @@ PokemonControllerTest > testgetAll() FAILED
         Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException at ConstructorResolver.java:804
             Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException at DefaultListableBeanFactory.java:2207
 
-PokemonControllerTest > testgeByPokedex() FAILED
+PokemonControllerTest > testgetByPokedex() FAILED
     java.lang.IllegalStateException at DefaultCacheAwareContextLoaderDelegate.java:145
 
 PokemonControllerTest > testupdateByPokedex() FAILED
