@@ -1,22 +1,21 @@
 package com.idan.pokemon_hub.controller
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.idan.pokemon_hub.PokemonController
+import com.idan.pokemon_hub.exception.PokemonNotFoundException
 import com.idan.pokemon_hub.model.Pokemon
+import com.idan.pokemon_hub.model.PokemonType
 import com.idan.pokemon_hub.service.PokemonService
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doNothing
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.delete
+import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.put
 import java.net.URI
 
 @WebMvcTest(PokemonController::class)
@@ -30,92 +29,143 @@ class PokemonControllerTest {
 
     private val objectMapper = jacksonObjectMapper()
     private val baseUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
-    private val testPokemon = Pokemon(1, "Bulbasaur", "grass/poison", URI("$baseUrl/1.png").toURL())
+
+    private val testPokemon1 = Pokemon(1, "Bulbasaur", setOf(PokemonType.GRASS), URI("$baseUrl/1.png").toURL())
+    private val testPokemon2 = Pokemon(2, "Charmander", setOf(PokemonType.FIRE), URI("$baseUrl/2.png").toURL())
 
     @BeforeEach
     fun setUp() {
-        whenever(pokemonService.getAll()).thenReturn(listOf(testPokemon))
+        whenever(pokemonService.getAll()).thenReturn(listOf(testPokemon1, testPokemon2))
 
-        whenever(pokemonService.geByPokedex(any())).thenAnswer { invocation ->
-            val id = invocation.getArgument<Long>(0)
-            if (id == 1L) testPokemon else null
+        whenever(pokemonService.getByPokedex(any())).thenAnswer { invocation ->
+            val id = invocation.arguments[0] as Long
+            when (id) {
+                1L -> testPokemon1
+                2L -> testPokemon2
+                else -> throw PokemonNotFoundException("Pokemon with Pokedex $id not found")
+            }
         }
 
         whenever(pokemonService.updateByPokedex(any(), any())).thenAnswer { invocation ->
-            val id = invocation.getArgument<Long>(0)
-            if (id == 1L) testPokemon.copy(name = "Updated Name") else null
+            val id = invocation.arguments[0] as Long
+            val pokemon = invocation.arguments[1] as Pokemon
+            when (id) {
+                1L -> testPokemon1.copy(name = pokemon.name)
+                2L -> testPokemon2.copy(name = pokemon.name)
+                else -> throw PokemonNotFoundException("Pokemon with Pokedex $id not found")
+            }
         }
 
         doNothing().whenever(pokemonService).deleteByPokedex(any())
-    }
-
-
-    @Test
-    @DisplayName("should return all pokemons when GET /pokemons is called")
-    fun shouldReturnAllPokemonsWhenGetAllIsCalled() {
-        // when + then
-        mockMvc.perform(get("/pokemons"))
-            .andExpect(status().isOk)
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$[0].pokedex").value(1))
-            .andExpect(jsonPath("$[0].name").value("Bulbasaur"))
-            .andExpect(jsonPath("$[0].type").value("grass/poison"))
+        whenever(pokemonService.deleteByPokedex(999)).thenThrow(PokemonNotFoundException("Pokemon with Pokedex 999 not found"))
     }
 
     @Test
-    @DisplayName("should return pokemon when GET /pokemons/{pokedex} is called with valid id")
-    fun shouldReturnPokemonWhenValidPokedexIsProvided() {
-        // when + then
-        mockMvc.perform(get("/pokemons/1"))
-            .andExpect(status().isOk)
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.pokedex").value(1))
-            .andExpect(jsonPath("$.name").value("Bulbasaur"))
-            .andExpect(jsonPath("$.type").value("grass/poison"))
+    fun `should return all pokemons when GET pokemons is called`() {
+        mockMvc.get("/pokemons") {
+            accept = MediaType.APPLICATION_JSON
+        }.andExpectAll {
+            status { isOk() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$[0].pokedex") { value(1) }
+            jsonPath("$[0].name") { value("Bulbasaur") }
+            jsonPath("$[0].type[0]") { value(PokemonType.GRASS.name) }
+            jsonPath("$[1].pokedex") { value(2) }
+            jsonPath("$[1].name") { value("Charmander") }
+            jsonPath("$[1].type[0]") { value(PokemonType.FIRE.name) }
+        }
     }
 
     @Test
-    @DisplayName("should return 404 when GET /pokemons/{pokedex} is called with invalid id")
-    fun shouldReturnNotFoundWhenInvalidPokedexIsProvided() {
-        // when + then
-        mockMvc.perform(get("/pokemons/2"))
-            .andExpect(status().isNotFound)
+    fun `should return pokemon when GET pokemons by pokedex is called with valid id`() {
+        mockMvc.get("/pokemons/1") {
+            accept = MediaType.APPLICATION_JSON
+        }.andExpectAll {
+            status { isOk() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.pokedex") { value(1) }
+            jsonPath("$.name") { value("Bulbasaur") }
+            jsonPath("$.type[0]") { value(PokemonType.GRASS.name) }
+        }
     }
 
     @Test
-    @DisplayName("should update pokemon when PUT /pokemons/{pokedex} is called with valid data")
-    fun shouldupdateByPokedexWhenValidInputProvided() {
-        // given
-        val updatedPokemon = testPokemon.copy(name = "Updated Name")
+    fun `should return pokemon when GET pokemons by pokedex is called with second valid id`() {
+        mockMvc.get("/pokemons/2") {
+            accept = MediaType.APPLICATION_JSON
+        }.andExpectAll {
+            status { isOk() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.pokedex") { value(2) }
+            jsonPath("$.name") { value("Charmander") }
+            jsonPath("$.type[0]") { value(PokemonType.FIRE.name) }
+        }
+    }
+
+    @Test
+    fun `should return 404 when GET pokemons by pokedex is called with invalid id`() {
+        mockMvc.get("/pokemons/999") {
+            accept = MediaType.APPLICATION_JSON
+        }.andExpectAll {
+            status { isNotFound() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.message") { value("Pokemon with Pokedex 999 not found") }
+            jsonPath("$.status") { value(404) }
+        }
+    }
+
+    @Test
+    fun `should update pokemon when PUT pokemons by pokedex is called with valid data`() {
+        val updatedPokemon = testPokemon1.copy(name = "Updated Name")
         val requestBody = objectMapper.writeValueAsString(updatedPokemon)
 
-        // when + then
-        mockMvc.perform(put("/pokemons/1")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.name").value("Updated Name"))
+        mockMvc.put("/pokemons/1") {
+            contentType = MediaType.APPLICATION_JSON
+            content = requestBody
+        }.andExpectAll {
+            status { isOk() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.name") { value("Updated Name") }
+            jsonPath("$.pokedex") { value(1) }
+            jsonPath("$.type[0]") { value(PokemonType.GRASS.name) }
+        }
     }
 
     @Test
-    @DisplayName("should return 404 when PUT /pokemons/{pokedex} is called with invalid id")
-    fun shouldReturnNotFoundWhenUpdatingNonexistentPokemon() {
-        // given
-        val updatedPokemon = testPokemon.copy(name = "Updated Name")
+    fun `should return 404 when PUT pokemons by pokedex is called with invalid id`() {
+        val updatedPokemon = testPokemon1.copy(name = "Updated Name")
         val requestBody = objectMapper.writeValueAsString(updatedPokemon)
 
-        // when + then
-        mockMvc.perform(put("/pokemons/2")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(requestBody))
-            .andExpect(status().isNotFound)
+        mockMvc.put("/pokemons/999") {
+            contentType = MediaType.APPLICATION_JSON
+            content = requestBody
+        }.andExpectAll {
+            status { isNotFound() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.message") { value("Pokemon with Pokedex 999 not found") }
+            jsonPath("$.status") { value(404) }
+        }
     }
 
     @Test
-    @DisplayName("should delete pokemon when DELETE /pokemons/{pokedex} is called")
-    fun shoulddeleteByPokedexWhenValidPokedexIsProvided() {
-        // when + then
-        mockMvc.perform(delete("/pokemons/1"))
-            .andExpect(status().isNoContent)
+    fun `should delete pokemon when DELETE pokemons by pokedex is called`() {
+        mockMvc.delete("/pokemons/1") {
+            accept = MediaType.APPLICATION_JSON
+        }.andExpectAll {
+            status { isNoContent() }
+            content { string("") }
+        }
+    }
+
+    @Test
+    fun `should return 404 when DELETE pokemons by pokedex is called with invalid id`() {
+        mockMvc.delete("/pokemons/999") {
+            accept = MediaType.APPLICATION_JSON
+        }.andExpectAll {
+            status { isNotFound() }
+            content { contentType(MediaType.APPLICATION_JSON) }
+            jsonPath("$.message") { value("Pokemon with Pokedex 999 not found") }
+            jsonPath("$.status") { value(404) }
+        }
     }
 }
