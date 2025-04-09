@@ -3,6 +3,7 @@ package com.idan.pokemon_hub.controller
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.idan.pokemon_hub.exception.PokemonNotFoundException
 import com.idan.pokemon_hub.model.Pokemon
+import com.idan.pokemon_hub.model.PokemonImage
 import com.idan.pokemon_hub.model.PokemonType
 import com.idan.pokemon_hub.service.PokemonService
 import org.junit.jupiter.api.BeforeEach
@@ -30,8 +31,8 @@ class PokemonControllerTest {
     private val objectMapper = jacksonObjectMapper()
     private val baseUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
 
-    private val testPokemon1 = Pokemon(1, "Bulbasaur", setOf(PokemonType.GRASS), URI("$baseUrl/1.png").toURL())
-    private val testPokemon2 = Pokemon(2, "Charmander", setOf(PokemonType.FIRE), URI("$baseUrl/2.png").toURL())
+    private val testPokemon1 = Pokemon(1, "Bulbasaur", setOf(PokemonType.GRASS), PokemonImage(1, URI("$baseUrl/1.png").toURL()))
+    private val testPokemon2 = Pokemon(2, "Charmander", setOf(PokemonType.FIRE), PokemonImage(2, URI("$baseUrl/2.png").toURL()))
 
     @BeforeEach
     fun setUp() {
@@ -70,9 +71,12 @@ class PokemonControllerTest {
             jsonPath("$[0].pokedex") { value(1) }
             jsonPath("$[0].name") { value("Bulbasaur") }
             jsonPath("$[0].type[0]") { value(PokemonType.GRASS.name) }
+            jsonPath("$[0].image.imageUrl") { value("$baseUrl/1.png") }
+
             jsonPath("$[1].pokedex") { value(2) }
             jsonPath("$[1].name") { value("Charmander") }
             jsonPath("$[1].type[0]") { value(PokemonType.FIRE.name) }
+            jsonPath("$[1].image.imageUrl") { value("$baseUrl/2.png") }
         }
     }
 
@@ -86,6 +90,7 @@ class PokemonControllerTest {
             jsonPath("$.pokedex") { value(1) }
             jsonPath("$.name") { value("Bulbasaur") }
             jsonPath("$.type[0]") { value(PokemonType.GRASS.name) }
+            jsonPath("$.image.imageUrl") { value("$baseUrl/1.png") }
         }
     }
 
@@ -99,6 +104,7 @@ class PokemonControllerTest {
             jsonPath("$.pokedex") { value(2) }
             jsonPath("$.name") { value("Charmander") }
             jsonPath("$.type[0]") { value(PokemonType.FIRE.name) }
+            jsonPath("$.image.imageUrl") { value("$baseUrl/2.png") }
         }
     }
 
@@ -128,6 +134,7 @@ class PokemonControllerTest {
             jsonPath("$.name") { value("Updated Name") }
             jsonPath("$.pokedex") { value(1) }
             jsonPath("$.type[0]") { value(PokemonType.GRASS.name) }
+            jsonPath("$.image.imageUrl") { value("$baseUrl/1.png") }
         }
     }
 

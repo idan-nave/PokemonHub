@@ -118,78 +118,7 @@ The tests cover the following functionalities:
   DELETE /pokemons/1 - Delete Pokémon with Pokédex ID 1
 - Validate that the correct HTTP status codes are returned (e.g., `200 OK` for successful requests, `404 Not Found` for nonexistent Pokémon).
 
-### 5. Project Structure
-The project follows a simple Spring Boot structure with Kotlin:
-
-```
-src
-├── main
-│   ├── kotlin
-│   │   └── com
-│   │       └── idan
-│   │           └── pokemon_hub
-│   │               ├── controller
-│   │               │   └── PokemonController.kt
-│   │               │       # REST controller handling HTTP requests for Pokémon CRUD operations.
-│   │               │       # Defines endpoints like GET /pokemons, PUT /pokemons/{pokedex}, etc.
-│   │               ├── exception
-│   │               │   ├── GlobalExceptionHandler.kt
-│   │               │   │   # Global exception handler using @ControllerAdvice.
-│   │               │   │   # Returns JSON error responses (e.g., { "message": "...", "status": 404 }) for exceptions.
-│   │               │   └── PokemonExceptions.kt
-│   │               │       # Custom exception classes (PokemonNotFoundException, InvalidFieldException, etc.).
-│   │               │       # Used to signal specific error conditions in the service layer.
-│   │               ├── init
-│   │               │   └── DataInit.kt
-│   │               │       # Initialization logic for loading initial Pokémon data.
-│   │               │       # Likely reads from Pokedex.json and populates the database on startup.
-│   │               ├── model
-│   │               │   ├── PokemonImage.kt
-│   │               │   │   # Entity representing Pokémon image URLs.
-│   │               │   │   # Linked to Pokemon via a one-to-one relationship.
-│   │               │   ├── Pokemon.kt
-│   │               │   │   # Core Pokémon entity with fields like pokedex, name, type, and image.
-│   │               │   │   # Annotated with JPA annotations for database mapping.
-│   │               │   └── PokemonType.kt
-│   │               │       # Enum class defining Pokémon types (e.g., GRASS, FIRE).
-│   │               │       # Used in Pokemon entity as a set of types.
-│   │               ├── PokemonHubApplication.kt
-│   │               │   # Main application entry point.
-│   │               │   # Contains the @SpringBootApplication annotation to bootstrap the app.
-│   │               ├── repository
-│   │               │   ├── PokemonImageRepository.kt
-│   │               │   │   # JPA repository interface for PokemonImage entity.
-│   │               │   │   # Provides CRUD operations for image data.
-│   │               │   └── PokemonRepository.kt
-│   │               │       # JPA repository interface for Pokemon entity.
-│   │               │       # Includes custom queries like findByPokedex.
-│   │               └── service
-│   │                   └── PokemonService.kt
-│   │                       # Business logic layer for Pokémon operations.
-│   │                       # Handles validation, interacts with repositories, and throws exceptions.
-│   └── resources
-│       ├── application.yml
-│       │   # Configuration file for Spring Boot.
-│       │   # Defines database settings, server port, etc.
-│       └── Pokedex.json
-│           # JSON file containing initial Pokémon data.
-│           # Used by DataInit.kt to seed the database.
-└── test
-    └── kotlin
-        └── com
-            └── idan
-                └── pokemon_hub
-                    ├── controller
-                    │   └── PokemonControllerTest.kt
-                    │       # Integration tests for PokemonController using MockMvc.
-                    │       # Tests endpoints with mocked PokemonService responses.
-                    └── service
-                        └── PokemonServiceTest.kt
-                            # Unit tests for PokemonService.
-                            # Uses Mockito to mock PokemonRepository and test service logic.
-```
-
-### 6. Future Roadmap
+### 5. Future Roadmap
 - Implement a respected database (e.g. MySQL) to store Pokémon data instead of in-memory H2.
 V Porting Types into ENUMs for better type safety.
 V Normalize the database so URLs will be stored in a separate table, as an industry standard.
@@ -197,7 +126,7 @@ V Normalize the database so URLs will be stored in a separate table, as an indus
 V Enhance the error handling (e.g., invalid Pokémon pokedex).
 - Expand the Pokémon list to include all generations.
 
-### 7. License
+### 6. License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---

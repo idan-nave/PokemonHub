@@ -1,10 +1,11 @@
 package com.idan.pokemon_hub.service
 
 import com.idan.pokemon_hub.exception.InvalidFieldException
+import com.idan.pokemon_hub.exception.PokemonNotFoundException
 import com.idan.pokemon_hub.model.Pokemon
+import com.idan.pokemon_hub.model.PokemonImage
 import com.idan.pokemon_hub.model.PokemonType
 import com.idan.pokemon_hub.repository.PokemonRepository
-import com.idan.pokemon_hub.exception.PokemonNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.mockito.kotlin.*
@@ -26,8 +27,18 @@ class PokemonServiceTest {
     @Test
     fun `should return all pokemons when repository has data`() {
         // given
-        val pokemon1 = Pokemon(1, "Bulbasaur", setOf(PokemonType.GRASS), URI("${baseUrl}1.png").toURL())
-        val pokemon2 = Pokemon(2, "Charmander", setOf(PokemonType.FIRE), URI("${baseUrl}2.png").toURL())
+        val pokemon1 = Pokemon(
+            1,
+            "Bulbasaur",
+            setOf(PokemonType.GRASS),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
+        val pokemon2 = Pokemon(
+            2,
+            "Charmander",
+            setOf(PokemonType.FIRE),
+            PokemonImage(2, URI("${baseUrl}2.png").toURL())
+        )
         val pokemonsList = listOf(pokemon1, pokemon2)
         whenever(pokemonRepository.findAll()).thenReturn(pokemonsList)
 
@@ -39,23 +50,31 @@ class PokemonServiceTest {
         assertThat(result).hasSize(2)
         assertThat(result).contains(pokemon1, pokemon2)
         assertThat(result[0].name).isEqualTo("Bulbasaur")
+        assertThat(result[0].image.imageUrl.toString()).isEqualTo("${baseUrl}1.png")
         assertThat(result[1].name).isEqualTo("Charmander")
+        assertThat(result[1].image.imageUrl.toString()).isEqualTo("${baseUrl}2.png")
     }
 
     @Test
     fun `should return pokemon when pokedex exists`() {
         // given
-        val pokemon = Pokemon(1, "Bulbasaur", setOf(PokemonType.GRASS), URI("${baseUrl}1.png").toURL())
+        val pokemon = Pokemon(
+            1,
+            "Bulbasaur",
+            setOf(PokemonType.GRASS),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
         whenever(pokemonRepository.findByPokedex(1)).thenReturn(pokemon)
 
         // when
-        val result = pokemonService.getByPokedex(1) // Fix to getByPokedex if service is updated
+        val result = pokemonService.getByPokedex(1)
 
         // then
         assertThat(result).isNotNull
         assertThat(result.name).isEqualTo("Bulbasaur")
         assertThat(result.type).isEqualTo(setOf(PokemonType.GRASS))
         assertThat(result.pokedex).isEqualTo(1)
+        assertThat(result.image.imageUrl.toString()).isEqualTo("${baseUrl}1.png")
     }
 
     @Test
@@ -65,7 +84,7 @@ class PokemonServiceTest {
 
         // when
         val exception = assertThrows<PokemonNotFoundException> {
-            pokemonService.getByPokedex(2) // Fix to getByPokedex if service is updated
+            pokemonService.getByPokedex(2)
         }
 
         // then
@@ -76,8 +95,18 @@ class PokemonServiceTest {
     @Test
     fun `should update pokemon when input is valid`() {
         // given
-        val existing = Pokemon(1, "Bulbasaur", setOf(PokemonType.GRASS), URI("${baseUrl}1.png").toURL())
-        val updated = Pokemon(1, "Updated Name", setOf(PokemonType.FIRE), URI("${baseUrl}1.png").toURL())
+        val existing = Pokemon(
+            1,
+            "Bulbasaur",
+            setOf(PokemonType.GRASS),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
+        val updated = Pokemon(
+            1,
+            "Updated Name",
+            setOf(PokemonType.FIRE),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
 
         whenever(pokemonRepository.findByPokedex(1)).thenReturn(existing)
         whenever(pokemonRepository.save(existing)).thenReturn(updated)
@@ -90,14 +119,25 @@ class PokemonServiceTest {
         assertThat(result.name).isEqualTo("Updated Name")
         assertThat(result.type).isEqualTo(setOf(PokemonType.FIRE))
         assertThat(result.pokedex).isEqualTo(1)
+        assertThat(result.image.imageUrl.toString()).isEqualTo("${baseUrl}1.png")
         verify(pokemonRepository, times(1)).save(existing)
     }
 
     @Test
     fun `should throw InvalidFieldException when type is empty`() {
         // given
-        val existing = Pokemon(1, "Bulbasaur", setOf(PokemonType.GRASS), URI("${baseUrl}1.png").toURL())
-        val invalid = Pokemon(1, "Bulbasaur", emptySet())
+        val existing = Pokemon(
+            1,
+            "Bulbasaur",
+            setOf(PokemonType.GRASS),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
+        val invalid = Pokemon(
+            1,
+            "Bulbasaur",
+            emptySet(),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
 
         whenever(pokemonRepository.findByPokedex(1)).thenReturn(existing)
 
@@ -114,8 +154,18 @@ class PokemonServiceTest {
     @Test
     fun `should throw InvalidFieldException when name is empty`() {
         // given
-        val existing = Pokemon(1, "Bulbasaur", setOf(PokemonType.GRASS), URI("${baseUrl}1.png").toURL())
-        val invalid = Pokemon(1, "", setOf(PokemonType.GRASS))
+        val existing = Pokemon(
+            1,
+            "Bulbasaur",
+            setOf(PokemonType.GRASS),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
+        val invalid = Pokemon(
+            1,
+            "",
+            setOf(PokemonType.GRASS),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
 
         whenever(pokemonRepository.findByPokedex(1)).thenReturn(existing)
 
@@ -133,7 +183,12 @@ class PokemonServiceTest {
     fun `should delete pokemon when pokedex is valid`() {
         // given
         val pokedex = 1L
-        val existing = Pokemon(1, "Bulbasaur", setOf(PokemonType.GRASS), URI("${baseUrl}1.png").toURL())
+        val existing = Pokemon(
+            1,
+            "Bulbasaur",
+            setOf(PokemonType.GRASS),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
         whenever(pokemonRepository.findByPokedex(pokedex)).thenReturn(existing)
 
         // when

@@ -22,10 +22,12 @@ spring:
       enabled: true
       path: /h2-console
 
-  logging:
-    level:
-      org.hibernate.SQL: DEBUG
-      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+
   sql:
     init:
       platform: org.hibernate.dialect.H2Dialect

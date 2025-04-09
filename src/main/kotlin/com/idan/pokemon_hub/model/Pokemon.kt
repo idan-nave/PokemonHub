@@ -1,8 +1,6 @@
 package com.idan.pokemon_hub.model
 
 import jakarta.persistence.*
-import java.net.URI
-import java.net.URL
 
 @Entity
 @Table(name = "pokemon")
@@ -21,7 +19,7 @@ data class Pokemon(
     )
     var type: Set<PokemonType> = emptySet(),
 
-    @OneToOne(cascade = [CascadeType.ALL])
+    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "image_pokedex", referencedColumnName = "pokedex")
-    var image: URL = URI("https://example.com/default.png").toURL()
+    var image: PokemonImage = PokemonImage() // Use no-arg constructor for default
 )

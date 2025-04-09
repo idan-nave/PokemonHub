@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/pokemons")
 class PokemonController(private val pokemonService: PokemonService) {
 
-    // BE ADVISED- a Global Exception Handler is handling the custom exceptions globally via @ControllerAdvice
     @GetMapping
     fun getAll(): List<Pokemon> {
         return pokemonService.getAll()
@@ -17,13 +16,11 @@ class PokemonController(private val pokemonService: PokemonService) {
 
     @GetMapping("/{pokedex}")
     fun getByPokedex(@PathVariable pokedex: Long): Pokemon {
-        // Let the service throw PokemonNotFoundException if not found, which will be caught by @ControllerAdvice
         return pokemonService.getByPokedex(pokedex)
     }
 
     @PutMapping("/{pokedex}")
     fun updateByPokedex(@PathVariable pokedex: Long, @RequestBody pokemon: Pokemon): Pokemon {
-        // Let the service throw PokemonNotFoundException if not found, which will be caught by @ControllerAdvice
         return pokemonService.updateByPokedex(pokedex, pokemon)
     }
 
