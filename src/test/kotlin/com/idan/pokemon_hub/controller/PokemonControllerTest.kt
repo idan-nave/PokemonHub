@@ -39,26 +39,26 @@ class PokemonControllerTest {
         whenever(pokemonService.getAll()).thenReturn(listOf(testPokemon1, testPokemon2))
 
         whenever(pokemonService.getByPokedex(any())).thenAnswer { invocation ->
-            val id = invocation.arguments[0] as Long
-            when (id) {
+            val pokedex = invocation.arguments[0] as Long
+            when (pokedex) {
                 1L -> testPokemon1
                 2L -> testPokemon2
-                else -> throw PokemonNotFoundException("Pokemon with Pokedex $id not found")
+                else -> throw PokemonNotFoundException(pokedex)
             }
         }
 
         whenever(pokemonService.updateByPokedex(any(), any())).thenAnswer { invocation ->
-            val id = invocation.arguments[0] as Long
+            val pokedex = invocation.arguments[0] as Long
             val pokemon = invocation.arguments[1] as Pokemon
-            when (id) {
+            when (pokedex) {
                 1L -> testPokemon1.copy(name = pokemon.name)
                 2L -> testPokemon2.copy(name = pokemon.name)
-                else -> throw PokemonNotFoundException("Pokemon with Pokedex $id not found")
+                else -> throw PokemonNotFoundException(pokedex)
             }
         }
 
         doNothing().whenever(pokemonService).deleteByPokedex(any())
-        whenever(pokemonService.deleteByPokedex(999)).thenThrow(PokemonNotFoundException("Pokemon with Pokedex 999 not found"))
+        whenever(pokemonService.deleteByPokedex(999)).thenThrow(PokemonNotFoundException(999))
     }
 
     @Test

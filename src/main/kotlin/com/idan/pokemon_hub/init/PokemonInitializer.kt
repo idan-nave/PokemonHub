@@ -25,7 +25,7 @@ class PokemonInitializer(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class PokemonDTO(
-        val id: Int,
+        val pokedex: Int,
         val name: Name,
         val type: List<String>,
         val image: Image
@@ -52,24 +52,20 @@ class PokemonInitializer(
                 return
             }
 
-            val mapper = jacksonObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, false)
-
             val inputStream = ClassPathResource("Pokedex.json").inputStream
             val pokedex: List<PokemonDTO> = jacksonObjectMapper()
                 .readValue(inputStream, jacksonTypeRef<List<PokemonDTO>>())
 
             val pokemons = pokedex.mapNotNull { entry ->
-                if (entry.name.english.isBlank()) {
-                    logger.warn("Skipping Pokémon ${entry.id} due to empty name")
+                if (entry.name.english.isBlank() || entry.type.isEmpty()) {
+                    logger.warn("Skipping Pokémon ${entry.pokedex} due to empty name")
                     null
                 } else {
                     val image = PokemonImage(
                         imageUrl = try {
                             URI(entry.image.hires).toURL()
                         } catch (e: Exception) {
-                            logger.warn("Invalid URL for Pokémon ${entry.id}: ${entry.image.hires}")
+                            logger.warn("Invalid URL for Pokémon ${entry.pokedex}: ${entry.image.hires}")
                             URI("https://example.com/default.png").toURL()
                         }
                     )
@@ -80,7 +76,7 @@ class PokemonInitializer(
                             try {
                                 PokemonType.valueOf(typeName.uppercase())
                             } catch (e: IllegalArgumentException) {
-                                logger.warn("Unknown type '${typeName}' for Pokémon ${entry.id}")
+                                logger.warn("Unknown type '${typeName}' for Pokémon ${entry.pokedex}")
                                 null
                             }
                         }.toSet(),

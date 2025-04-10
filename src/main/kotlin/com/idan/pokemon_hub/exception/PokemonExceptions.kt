@@ -1,10 +1,7 @@
 package com.idan.pokemon_hub.exception
 
-// Exception for when a Pokemon is not found
-class PokemonNotFoundException(message: String) : RuntimeException(message)
+class PokemonNotFoundException(pokedex: Long) : RuntimeException("Pokemon with Pokedex $pokedex not found")
 
-// Exception for when fields (like name or type) are invalid
-class InvalidFieldException(message: String) : RuntimeException(message)
+class InvalidFieldException(field: String) : RuntimeException("$field cannot be empty")
 
-// Exception for when the type of a Pokemon is invalid
-class InvalidTypeException(message: String) : RuntimeException(message)
+class InvalidTypeException(type: String) : RuntimeException("Invalid Pokemon type: $type")

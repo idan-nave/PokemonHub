@@ -64,7 +64,7 @@ class PokemonServiceTest {
             setOf(PokemonType.GRASS),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
-        whenever(pokemonRepository.findByPokedex(1)).thenReturn(pokemon)
+        whenever(pokemonRepository.getByPokedex(1)).thenReturn(pokemon)
 
         // when
         val result = pokemonService.getByPokedex(1)
@@ -80,7 +80,7 @@ class PokemonServiceTest {
     @Test
     fun `should throw PokemonNotFoundException when pokedex does not exist`() {
         // given
-        whenever(pokemonRepository.findByPokedex(2)).thenReturn(null)
+        whenever(pokemonRepository.getByPokedex(2)).thenReturn(null)
 
         // when
         val exception = assertThrows<PokemonNotFoundException> {
@@ -108,7 +108,7 @@ class PokemonServiceTest {
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
 
-        whenever(pokemonRepository.findByPokedex(1)).thenReturn(existing)
+        whenever(pokemonRepository.getByPokedex(1)).thenReturn(existing)
         whenever(pokemonRepository.save(existing)).thenReturn(updated)
 
         // when
@@ -139,7 +139,7 @@ class PokemonServiceTest {
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
 
-        whenever(pokemonRepository.findByPokedex(1)).thenReturn(existing)
+        whenever(pokemonRepository.getByPokedex(1)).thenReturn(existing)
 
         // when
         val exception = assertThrows<InvalidFieldException> {
@@ -167,7 +167,7 @@ class PokemonServiceTest {
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
 
-        whenever(pokemonRepository.findByPokedex(1)).thenReturn(existing)
+        whenever(pokemonRepository.getByPokedex(1)).thenReturn(existing)
 
         // when
         val exception = assertThrows<InvalidFieldException> {
@@ -189,7 +189,7 @@ class PokemonServiceTest {
             setOf(PokemonType.GRASS),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
-        whenever(pokemonRepository.findByPokedex(pokedex)).thenReturn(existing)
+        whenever(pokemonRepository.getByPokedex(pokedex)).thenReturn(existing)
 
         // when
         pokemonService.deleteByPokedex(pokedex)
@@ -202,7 +202,7 @@ class PokemonServiceTest {
     fun `should throw NOT_FOUND when attempting to delete a non-existent pokemon`() {
         // given
         val pokedex = 999L
-        whenever(pokemonRepository.findByPokedex(pokedex)).thenReturn(null)
+        whenever(pokemonRepository.getByPokedex(pokedex)).thenReturn(null)
 
         // when
         val exception = assertThrows<PokemonNotFoundException> {
