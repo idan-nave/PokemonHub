@@ -10,8 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.net.URI
 import org.assertj.core.api.Assertions.assertThat
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.transaction.annotation.Transactional
 
+@ActiveProfiles("test")
 @SpringBootTest
+@Transactional
 class PokemonPersistenceTest {
 
     @Autowired
@@ -24,11 +28,11 @@ class PokemonPersistenceTest {
     fun `should save pokemon and cascade to pokemon image`() {
         // Arrange
         val pokemon = Pokemon(
-            pokedex = 1L,
+//            pokedex = 1L,
             name = "Pikachu",
             type = setOf(PokemonType.ELECTRIC),
             image = PokemonImage(
-                pokedex = 0, // Auto-generated
+//                pokedex = 0, // Auto-generated
                 imageUrl = URI("https://example.com/pikachu.png").toURL()
             )
         )
