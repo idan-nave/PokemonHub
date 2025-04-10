@@ -9,7 +9,7 @@ import java.net.URL
 data class PokemonImage(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var pokedex: Long = 0,
+    val pokedex: Long = 0,
 
     @Column(name = "image_url", nullable = false)
     var imageUrl: URL = URI("https://example.com/default.png").toURL()
