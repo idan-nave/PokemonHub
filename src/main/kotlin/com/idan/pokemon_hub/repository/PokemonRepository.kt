@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface PokemonRepository : JpaRepository<Pokemon, Long> {
-    fun findByPokedex(pokedex: Long): Pokemon?
-    fun deleteByPokedex(pokedex: Long)
+    fun getByPokedex(pokedex: Long): Pokemon?
 }

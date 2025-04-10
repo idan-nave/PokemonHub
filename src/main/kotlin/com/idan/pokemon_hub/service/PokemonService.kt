@@ -14,20 +14,20 @@ class PokemonService(private val pokemonRepository: PokemonRepository) {
     }
 
     fun getByPokedex(pokedex: Long): Pokemon {
-        val pokemon = pokemonRepository.findByPokedex(pokedex)
-        return pokemon ?: throw PokemonNotFoundException("Pokemon with Pokedex $pokedex not found")
+        return pokemonRepository.getByPokedex(pokedex)
+            ?: throw PokemonNotFoundException(pokedex)
     }
 
     fun updateByPokedex(pokedex: Long, pokemon: Pokemon): Pokemon {
         if (pokemon.name.isBlank()) {
-            throw InvalidFieldException("Name cannot be empty")
+            throw InvalidFieldException("Name")
         }
         if (pokemon.type.isEmpty()) {
-            throw InvalidFieldException("Type cannot be empty")
+            throw InvalidFieldException("Type")
         }
 
-        val existingPokemon = pokemonRepository.findByPokedex(pokedex)
-            ?: throw PokemonNotFoundException("Pokemon with Pokedex $pokedex not found")
+        val existingPokemon = pokemonRepository.getByPokedex(pokedex)
+            ?: throw PokemonNotFoundException(pokedex)
 
         existingPokemon.name = pokemon.name
         existingPokemon.type = pokemon.type
@@ -36,8 +36,8 @@ class PokemonService(private val pokemonRepository: PokemonRepository) {
     }
 
     fun deleteByPokedex(pokedex: Long) {
-        val existingPokemon = pokemonRepository.findByPokedex(pokedex)
-            ?: throw PokemonNotFoundException("Pokemon with Pokedex $pokedex not found")
+        val existingPokemon = pokemonRepository.getByPokedex(pokedex)
+            ?: throw PokemonNotFoundException(pokedex)
         pokemonRepository.delete(existingPokemon)
     }
 }

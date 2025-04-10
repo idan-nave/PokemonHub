@@ -28,11 +28,9 @@ class PokemonPersistenceTest {
     fun `should save pokemon and cascade to pokemon image`() {
         // Arrange
         val pokemon = Pokemon(
-//            pokedex = 1L,
             name = "Pikachu",
             type = setOf(PokemonType.ELECTRIC),
             image = PokemonImage(
-//                pokedex = 0, // Auto-generated
                 imageUrl = URI("https://example.com/pikachu.png").toURL()
             )
         )
