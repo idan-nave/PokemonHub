@@ -33,7 +33,7 @@ class PokemonInitializerTest {
     @Test
     fun `should save pokemon with image via repository`() {
         val mockRepo = mock<PokemonRepository>()
-        val pokemon = Pokemon(pokedex = 1L, image = PokemonImage(imageUrl = URI("https://example.com/test.png").toURL()))
+        val pokemon = Pokemon(pokedex = 1L, 0,image = PokemonImage(imageUrl = URI("https://example.com/test.png").toURL()))
         mockRepo.save(pokemon)
         verify(mockRepo).save(pokemon)
     }

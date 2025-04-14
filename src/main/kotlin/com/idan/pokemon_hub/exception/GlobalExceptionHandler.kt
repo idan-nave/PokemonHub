@@ -2,6 +2,7 @@ package com.idan.pokemon_hub.exception
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 
@@ -32,5 +33,12 @@ class GlobalExceptionHandler {
     fun handleGeneralException(ex: Exception): ResponseEntity<ErrorResponse> {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse("An unexpected error occurred: ${ex.message}", HttpStatus.INTERNAL_SERVER_ERROR.value()))
+    }
+
+    // Handle OptimisticLockException (Race Condition)
+    @ExceptionHandler(ObjectOptimisticLockingFailureException::class)
+    fun handleOptimisticLockException(ex: ObjectOptimisticLockingFailureException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.CONFLICT)  // 409 Conflict
+            .body(ErrorResponse("Optimistic lock exception: concurrent modification detected", HttpStatus.CONFLICT.value()))
     }
 }

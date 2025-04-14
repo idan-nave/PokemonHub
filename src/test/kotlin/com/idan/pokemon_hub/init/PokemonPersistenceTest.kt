@@ -28,6 +28,8 @@ class PokemonPersistenceTest {
     fun `should save pokemon and cascade to pokemon image`() {
         // Arrange
         val pokemon = Pokemon(
+            0,  // pokedex
+            0,  // version
             name = "Pikachu",
             type = setOf(PokemonType.ELECTRIC),
             image = PokemonImage(

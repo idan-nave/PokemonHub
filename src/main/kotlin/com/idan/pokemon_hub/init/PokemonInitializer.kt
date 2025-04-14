@@ -80,7 +80,8 @@ class PokemonInitializer(
                                 null
                             }
                         }.toSet(),
-                        image = image
+                        image = image,
+                        version = 0
                     )
                 }
             }

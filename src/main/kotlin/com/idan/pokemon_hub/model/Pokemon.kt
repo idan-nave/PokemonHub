@@ -7,7 +7,10 @@ import jakarta.persistence.*
 data class Pokemon(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val pokedex: Long = 0,
+    val pokedex: Long = 0L,
+
+    @Version
+    var version: Long = 0L,
 
     var name: String = "",
 

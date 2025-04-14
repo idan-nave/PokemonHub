@@ -2,10 +2,12 @@ package com.idan.pokemon_hub.service
 
 import com.idan.pokemon_hub.exception.InvalidFieldException
 import com.idan.pokemon_hub.exception.PokemonNotFoundException
+import com.idan.pokemon_hub.exception.RaceConditionDetectedException
 import com.idan.pokemon_hub.model.Pokemon
 import com.idan.pokemon_hub.model.PokemonImage
 import com.idan.pokemon_hub.model.PokemonType
 import com.idan.pokemon_hub.repository.PokemonRepository
+import jakarta.persistence.OptimisticLockException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.mockito.kotlin.*
@@ -28,13 +30,13 @@ class PokemonServiceTest {
     fun `should return all pokemons when repository has data`() {
         // given
         val pokemon1 = Pokemon(
-            1,
+            1, 0,
             "Bulbasaur",
             setOf(PokemonType.GRASS),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
         val pokemon2 = Pokemon(
-            2,
+            2,0,
             "Charmander",
             setOf(PokemonType.FIRE),
             PokemonImage(2, URI("${baseUrl}2.png").toURL())
@@ -59,7 +61,7 @@ class PokemonServiceTest {
     fun `should return pokemon when pokedex exists`() {
         // given
         val pokemon = Pokemon(
-            1,
+            1,0,
             "Bulbasaur",
             setOf(PokemonType.GRASS),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
@@ -96,19 +98,20 @@ class PokemonServiceTest {
     fun `should update pokemon when input is valid`() {
         // given
         val existing = Pokemon(
-            1,
+            1, 0,
             "Bulbasaur",
             setOf(PokemonType.GRASS),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
         val updated = Pokemon(
-            1,
+            1, 0,
             "Updated Name",
             setOf(PokemonType.FIRE),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
 
-        whenever(pokemonRepository.getByPokedex(1)).thenReturn(existing)
+        // Mock the repository to return the existing Pokemon
+        whenever(pokemonRepository.findByPokedex(1)).thenReturn(existing)
         whenever(pokemonRepository.save(existing)).thenReturn(updated)
 
         // when
@@ -124,16 +127,45 @@ class PokemonServiceTest {
     }
 
     @Test
+    fun `should throw RaceConditionDetectedException on concurrent update`() {
+        // given
+        val existing = Pokemon(
+            1, 0,  // initial version is 0
+            "Bulbasaur",
+            setOf(PokemonType.GRASS),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
+        val updated = Pokemon(
+            1, 0,  // version will be managed by JPA
+            "Updated Name",
+            setOf(PokemonType.FIRE),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
+
+        whenever(pokemonRepository.findByPokedex(1)).thenReturn(existing)
+        whenever(pokemonRepository.save(existing)).thenReturn(updated)
+        // simulate race condition
+        whenever(pokemonRepository.findByPokedex(1)).thenReturn(existing)
+        whenever(pokemonRepository.save(existing)).thenThrow(OptimisticLockException("Optimistic lock failed"))
+        val exception = assertThrows<RaceConditionDetectedException> {
+            pokemonService.updateByPokedex(1, updated)
+        }
+
+        // then
+        assertThat(exception.message).isEqualTo("Optimistic locking failed: concurrent modification detected.")
+    }
+
+    @Test
     fun `should throw InvalidFieldException when type is empty`() {
         // given
         val existing = Pokemon(
-            1,
+            1,0,
             "Bulbasaur",
             setOf(PokemonType.GRASS),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
         val invalid = Pokemon(
-            1,
+            1,0,
             "Bulbasaur",
             emptySet(),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
@@ -155,13 +187,13 @@ class PokemonServiceTest {
     fun `should throw InvalidFieldException when name is empty`() {
         // given
         val existing = Pokemon(
-            1,
+            1, 0,
             "Bulbasaur",
             setOf(PokemonType.GRASS),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
         val invalid = Pokemon(
-            1,
+            1, 0,
             "",
             setOf(PokemonType.GRASS),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
@@ -184,7 +216,7 @@ class PokemonServiceTest {
         // given
         val pokedex = 1L
         val existing = Pokemon(
-            1,
+            1, 0,
             "Bulbasaur",
             setOf(PokemonType.GRASS),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())

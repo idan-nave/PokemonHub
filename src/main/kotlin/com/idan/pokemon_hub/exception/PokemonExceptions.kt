@@ -5,3 +5,5 @@ class PokemonNotFoundException(pokedex: Long) : RuntimeException("Pokemon with P
 class InvalidFieldException(field: String) : RuntimeException("$field cannot be empty")
 
 class InvalidTypeException(type: String) : RuntimeException("Invalid Pokemon type: $type")
+
+class RaceConditionDetectedException(message: String) : RuntimeException(message)

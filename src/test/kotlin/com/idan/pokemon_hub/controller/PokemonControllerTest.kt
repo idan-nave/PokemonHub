@@ -31,8 +31,8 @@ class PokemonControllerTest {
     private val objectMapper = jacksonObjectMapper()
     private val baseUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
 
-    private val testPokemon1 = Pokemon(1, "Bulbasaur", setOf(PokemonType.GRASS), PokemonImage(1, URI("$baseUrl/1.png").toURL()))
-    private val testPokemon2 = Pokemon(2, "Charmander", setOf(PokemonType.FIRE), PokemonImage(2, URI("$baseUrl/2.png").toURL()))
+    private val testPokemon1 = Pokemon(1, 0, "Bulbasaur", setOf(PokemonType.GRASS), PokemonImage(1, URI("$baseUrl/1.png").toURL()))
+    private val testPokemon2 = Pokemon(2, 0, "Charmander", setOf(PokemonType.FIRE), PokemonImage(2, URI("$baseUrl/2.png").toURL()))
 
     @BeforeEach
     fun setUp() {
