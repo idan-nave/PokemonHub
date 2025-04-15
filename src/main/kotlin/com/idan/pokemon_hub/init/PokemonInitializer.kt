@@ -16,7 +16,7 @@ import java.io.IOException
 import java.net.URI
 
 @Service
-@Profile("!test") // Don't run in the "test" profile
+@Profile("!dataTest")
 class PokemonInitializer(private val pokemonRepository: PokemonRepository) {
     private val logger = LoggerFactory.getLogger(PokemonInitializer::class.java)
 

@@ -13,7 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 
-@ActiveProfiles("test")
+@ActiveProfiles("dataTest")
 @SpringBootTest
 @Transactional
 class PokemonPersistenceTest {
