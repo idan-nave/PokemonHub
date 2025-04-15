@@ -124,7 +124,8 @@ V Porting Types into ENUMs for better type safety.
 V Normalize the database so URLs will be stored in a separate table, as an industry standard.
 - Add authentication/authorization for the API (e.g., using JWT).
 V Enhance the error handling (e.g., invalid Pokémon pokedex).
-- Expand the Pokémon list to include all generations.
+V Expand the Pokémon list to include all generations- currently 151, but the Json is full, so its only about changing the filter.
+V Optimistic lock mechanism for updating a Pokémon, with a correspondent custom exception. Available in a EXTRA branch.
 
 ### 6. License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

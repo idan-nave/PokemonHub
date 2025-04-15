@@ -11,40 +11,29 @@ import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ClassPathResource
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import java.io.IOException
 import java.net.URI
 
-@Component
+@Service
 @Profile("!test") // Don't run in the "test" profile
-class PokemonInitializer(
-    private val pokemonRepository: PokemonRepository
-) {
+class PokemonInitializer(private val pokemonRepository: PokemonRepository) {
     private val logger = LoggerFactory.getLogger(PokemonInitializer::class.java)
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class PokemonDTO(
-        val pokedex: Int,
-        val name: Name,
-        val type: List<String>,
-        val image: Image
+        val pokedex: Int, val name: Name, val type: List<String>, val image: Image
     )
 
     data class Name(
-        val english: String = "",
-        val japanese: String? = null,
-        val chinese: String? = null,
-        val french: String? = null
+        val english: String = "", val japanese: String? = null, val chinese: String? = null, val french: String? = null
     )
 
     data class Image(
-        val hires: String = "",
-        val sprite: String? = null,
-        val thumbnail: String? = null
+        val hires: String = "", val sprite: String? = null, val thumbnail: String? = null
     )
 
-    @PostConstruct
-    fun init() {
+    fun initializePokemonData() {
         try {
             if (pokemonRepository.count() > 0) {
                 logger.info("Pokémon data already initialized.")
@@ -52,8 +41,8 @@ class PokemonInitializer(
             }
 
             val inputStream = ClassPathResource("Pokedex.json").inputStream
-            val pokedex: List<PokemonDTO> = jacksonObjectMapper()
-                .readValue(inputStream, jacksonTypeRef<List<PokemonDTO>>())
+            val pokedex: List<PokemonDTO> =
+                jacksonObjectMapper().readValue(inputStream, jacksonTypeRef<List<PokemonDTO>>())
 
             val pokemons = pokedex.take(151).map { entry ->
                 val image = PokemonImage(
@@ -66,16 +55,14 @@ class PokemonInitializer(
                 )
 
                 Pokemon(
-                    name = entry.name.english,
-                    type = entry.type.mapNotNull { typeName ->
+                    name = entry.name.english, type = entry.type.mapNotNull { typeName ->
                         try {
                             PokemonType.valueOf(typeName.uppercase())
                         } catch (e: IllegalArgumentException) {
                             logger.warn("Unknown type '${typeName}' for Pokémon ${entry.pokedex}")
                             null
                         }
-                    }.toSet(),
-                    image = image
+                    }.toSet(), image = image
                 )
             }
 

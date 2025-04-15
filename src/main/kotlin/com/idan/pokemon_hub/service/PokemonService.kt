@@ -28,10 +28,13 @@ class PokemonService(private val pokemonRepository: PokemonRepository) {
 
         val existingPokemon = pokemonRepository.findById(pokedex).getOrElse { throw PokemonNotFoundException(pokedex) }
 
-        existingPokemon.name = pokemon.name
-        existingPokemon.type = pokemon.type
-        existingPokemon.image = pokemon.image
-        return pokemonRepository.save(existingPokemon)
+        return existingPokemon.apply {
+            name = pokemon.name
+            type = pokemon.type
+            image = pokemon.image
+        }.let {
+            pokemonRepository.save(it)
+        }
     }
 
     fun deleteByPokedex(pokedex: Long) {
