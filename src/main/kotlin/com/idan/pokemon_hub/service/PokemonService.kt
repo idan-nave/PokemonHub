@@ -5,6 +5,7 @@ import com.idan.pokemon_hub.exception.PokemonNotFoundException
 import com.idan.pokemon_hub.model.Pokemon
 import com.idan.pokemon_hub.repository.PokemonRepository
 import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrElse
 
 @Service
 class PokemonService(private val pokemonRepository: PokemonRepository) {
@@ -14,8 +15,7 @@ class PokemonService(private val pokemonRepository: PokemonRepository) {
     }
 
     fun getByPokedex(pokedex: Long): Pokemon {
-        return pokemonRepository.getByPokedex(pokedex)
-            ?: throw PokemonNotFoundException(pokedex)
+        return pokemonRepository.findById(pokedex).getOrElse { throw PokemonNotFoundException(pokedex) }
     }
 
     fun updateByPokedex(pokedex: Long, pokemon: Pokemon): Pokemon {
@@ -26,8 +26,7 @@ class PokemonService(private val pokemonRepository: PokemonRepository) {
             throw InvalidFieldException("Type")
         }
 
-        val existingPokemon = pokemonRepository.getByPokedex(pokedex)
-            ?: throw PokemonNotFoundException(pokedex)
+        val existingPokemon = pokemonRepository.findById(pokedex).getOrElse { throw PokemonNotFoundException(pokedex) }
 
         existingPokemon.name = pokemon.name
         existingPokemon.type = pokemon.type
@@ -36,8 +35,7 @@ class PokemonService(private val pokemonRepository: PokemonRepository) {
     }
 
     fun deleteByPokedex(pokedex: Long) {
-        val existingPokemon = pokemonRepository.getByPokedex(pokedex)
-            ?: throw PokemonNotFoundException(pokedex)
+        val existingPokemon = pokemonRepository.findById(pokedex).getOrElse { throw PokemonNotFoundException(pokedex) }
         pokemonRepository.delete(existingPokemon)
     }
 }

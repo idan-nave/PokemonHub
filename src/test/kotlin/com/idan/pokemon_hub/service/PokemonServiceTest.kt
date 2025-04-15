@@ -10,6 +10,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.mockito.kotlin.*
 import java.net.URI
+import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class PokemonServiceTest {
@@ -19,20 +20,30 @@ class PokemonServiceTest {
 
     private val baseUrl = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/"
 
+    private lateinit var existingPokemon: Pokemon
+    private lateinit var updatedPokemon: Pokemon
+
     @BeforeEach
     fun setUp() {
         pokemonService = PokemonService(pokemonRepository)
-    }
 
-    @Test
-    fun `should return all pokemons when repository has data`() {
-        // given
-        val pokemon1 = Pokemon(
+        existingPokemon = Pokemon(
             1,
             "Bulbasaur",
             setOf(PokemonType.GRASS),
             PokemonImage(1, URI("${baseUrl}1.png").toURL())
         )
+        updatedPokemon = Pokemon(
+            1,
+            "Updated Name",
+            setOf(PokemonType.FIRE),
+            PokemonImage(1, URI("${baseUrl}1.png").toURL())
+        )
+    }
+
+    @Test
+    fun `should return all pokemons when repository has data`() {
+        val pokemon1 = existingPokemon
         val pokemon2 = Pokemon(
             2,
             "Charmander",
@@ -42,175 +53,92 @@ class PokemonServiceTest {
         val pokemonsList = listOf(pokemon1, pokemon2)
         whenever(pokemonRepository.findAll()).thenReturn(pokemonsList)
 
-        // when
         val result = pokemonService.getAll()
 
-        // then
         assertThat(result).isNotNull
         assertThat(result).hasSize(2)
         assertThat(result).contains(pokemon1, pokemon2)
-        assertThat(result[0].name).isEqualTo("Bulbasaur")
-        assertThat(result[0].image.imageUrl.toString()).isEqualTo("${baseUrl}1.png")
-        assertThat(result[1].name).isEqualTo("Charmander")
-        assertThat(result[1].image.imageUrl.toString()).isEqualTo("${baseUrl}2.png")
     }
 
     @Test
     fun `should return pokemon when pokedex exists`() {
-        // given
-        val pokemon = Pokemon(
-            1,
-            "Bulbasaur",
-            setOf(PokemonType.GRASS),
-            PokemonImage(1, URI("${baseUrl}1.png").toURL())
-        )
-        whenever(pokemonRepository.getByPokedex(1)).thenReturn(pokemon)
+        whenever(pokemonRepository.findById(1)).thenReturn(Optional.of(existingPokemon))
 
-        // when
         val result = pokemonService.getByPokedex(1)
 
-        // then
         assertThat(result).isNotNull
         assertThat(result.name).isEqualTo("Bulbasaur")
-        assertThat(result.type).isEqualTo(setOf(PokemonType.GRASS))
         assertThat(result.pokedex).isEqualTo(1)
-        assertThat(result.image.imageUrl.toString()).isEqualTo("${baseUrl}1.png")
     }
 
     @Test
     fun `should throw PokemonNotFoundException when pokedex does not exist`() {
-        // given
-        whenever(pokemonRepository.getByPokedex(2)).thenReturn(null)
+        whenever(pokemonRepository.findById(2)).thenReturn(Optional.empty())
 
-        // when
         val exception = assertThrows<PokemonNotFoundException> {
             pokemonService.getByPokedex(2)
         }
 
-        // then
         assertThat(exception.message).isEqualTo("Pokemon with Pokedex 2 not found")
-        assertThat(exception).isInstanceOf(PokemonNotFoundException::class.java)
     }
 
     @Test
     fun `should update pokemon when input is valid`() {
-        // given
-        val existing = Pokemon(
-            1,
-            "Bulbasaur",
-            setOf(PokemonType.GRASS),
-            PokemonImage(1, URI("${baseUrl}1.png").toURL())
-        )
-        val updated = Pokemon(
-            1,
-            "Updated Name",
-            setOf(PokemonType.FIRE),
-            PokemonImage(1, URI("${baseUrl}1.png").toURL())
-        )
+        whenever(pokemonRepository.findById(1)).thenReturn(Optional.of(existingPokemon))
+        whenever(pokemonRepository.save(existingPokemon)).thenReturn(updatedPokemon)
 
-        whenever(pokemonRepository.getByPokedex(1)).thenReturn(existing)
-        whenever(pokemonRepository.save(existing)).thenReturn(updated)
+        val result = pokemonService.updateByPokedex(1, updatedPokemon)
 
-        // when
-        val result = pokemonService.updateByPokedex(1, updated)
-
-        // then
         assertThat(result).isNotNull
         assertThat(result.name).isEqualTo("Updated Name")
         assertThat(result.type).isEqualTo(setOf(PokemonType.FIRE))
         assertThat(result.pokedex).isEqualTo(1)
-        assertThat(result.image.imageUrl.toString()).isEqualTo("${baseUrl}1.png")
-        verify(pokemonRepository, times(1)).save(existing)
+        verify(pokemonRepository, times(1)).save(existingPokemon)
     }
 
     @Test
     fun `should throw InvalidFieldException when type is empty`() {
-        // given
-        val existing = Pokemon(
-            1,
-            "Bulbasaur",
-            setOf(PokemonType.GRASS),
-            PokemonImage(1, URI("${baseUrl}1.png").toURL())
-        )
-        val invalid = Pokemon(
-            1,
-            "Bulbasaur",
-            emptySet(),
-            PokemonImage(1, URI("${baseUrl}1.png").toURL())
-        )
+        val invalid = existingPokemon.copy(type = emptySet())
 
-        whenever(pokemonRepository.getByPokedex(1)).thenReturn(existing)
+        whenever(pokemonRepository.findById(1)).thenReturn(Optional.of(existingPokemon))
 
-        // when
         val exception = assertThrows<InvalidFieldException> {
             pokemonService.updateByPokedex(1, invalid)
         }
 
-        // then
         assertThat(exception.message).isEqualTo("Type cannot be empty")
-        assertThat(exception).isInstanceOf(InvalidFieldException::class.java)
     }
 
     @Test
     fun `should throw InvalidFieldException when name is empty`() {
-        // given
-        val existing = Pokemon(
-            1,
-            "Bulbasaur",
-            setOf(PokemonType.GRASS),
-            PokemonImage(1, URI("${baseUrl}1.png").toURL())
-        )
-        val invalid = Pokemon(
-            1,
-            "",
-            setOf(PokemonType.GRASS),
-            PokemonImage(1, URI("${baseUrl}1.png").toURL())
-        )
+        val invalid = existingPokemon.copy(name = "")
 
-        whenever(pokemonRepository.getByPokedex(1)).thenReturn(existing)
+        whenever(pokemonRepository.findById(1)).thenReturn(Optional.of(existingPokemon))
 
-        // when
         val exception = assertThrows<InvalidFieldException> {
             pokemonService.updateByPokedex(1, invalid)
         }
 
-        // then
         assertThat(exception.message).isEqualTo("Name cannot be empty")
-        assertThat(exception).isInstanceOf(InvalidFieldException::class.java)
     }
 
     @Test
     fun `should delete pokemon when pokedex is valid`() {
-        // given
-        val pokedex = 1L
-        val existing = Pokemon(
-            1,
-            "Bulbasaur",
-            setOf(PokemonType.GRASS),
-            PokemonImage(1, URI("${baseUrl}1.png").toURL())
-        )
-        whenever(pokemonRepository.getByPokedex(pokedex)).thenReturn(existing)
+        whenever(pokemonRepository.findById(1)).thenReturn(Optional.of(existingPokemon))
 
-        // when
-        pokemonService.deleteByPokedex(pokedex)
+        pokemonService.deleteByPokedex(1)
 
-        // then
-        verify(pokemonRepository, times(1)).delete(existing)
+        verify(pokemonRepository, times(1)).delete(existingPokemon)
     }
 
     @Test
-    fun `should throw NOT_FOUND when attempting to delete a non-existent pokemon`() {
-        // given
-        val pokedex = 999L
-        whenever(pokemonRepository.getByPokedex(pokedex)).thenReturn(null)
+    fun `should throw PokemonNotFoundException when attempting to delete a non-existent pokemon`() {
+        whenever(pokemonRepository.findById(999)).thenReturn(Optional.empty())
 
-        // when
         val exception = assertThrows<PokemonNotFoundException> {
-            pokemonService.deleteByPokedex(pokedex)
+            pokemonService.deleteByPokedex(999)
         }
 
-        // then
         assertThat(exception.message).isEqualTo("Pokemon with Pokedex 999 not found")
-        assertThat(exception).isInstanceOf(PokemonNotFoundException::class.java)
     }
 }
