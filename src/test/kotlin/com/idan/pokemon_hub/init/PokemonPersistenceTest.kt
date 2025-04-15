@@ -26,7 +26,7 @@ class PokemonPersistenceTest {
 
     @Test
     fun `should save pokemon and cascade to pokemon image`() {
-        // Arrange
+        // given
         val pokemon = Pokemon(
             name = "Pikachu",
             type = setOf(PokemonType.ELECTRIC),
@@ -35,10 +35,10 @@ class PokemonPersistenceTest {
             )
         )
 
-        // Act
+        // when
         pokemonRepository.save(pokemon)
 
-        // Assert
+        // then
         val savedPokemon = pokemonRepository.findById(1L).get()
         assertThat(savedPokemon.image).isNotNull
         assertThat(savedPokemon.image.imageUrl.toString()).isEqualTo("https://example.com/pikachu.png")

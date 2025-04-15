@@ -26,7 +26,7 @@ Before running this application, make sure you have the following installed:
 ## Running the Application
 
 ### 1. Clone the repository:
-```bash
+```
 git clone https://github.com/your-pokemonname/kotlin-spring-pokemon-api.git
 cd kotlin-spring-pokemon-api
 ```
@@ -84,7 +84,7 @@ Example response:
 This endpoint retrieves detailed information about a specific Pokémon by its unique pokedex.
 
 Example request:
-```bash
+```
 GET /pokemons/1
 ```
 
@@ -103,7 +103,7 @@ Example response:
 To ensure everything works correctly, you can run the unit tests for the application. These tests use JUnit and AssertJ for assertions.
 
 #### Running Tests with Gradle:
-```bash
+```
 ./gradlew test
 ```
 

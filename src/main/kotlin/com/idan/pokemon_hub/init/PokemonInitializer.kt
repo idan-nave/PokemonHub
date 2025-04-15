@@ -1,7 +1,6 @@
 package com.idan.pokemon_hub.init
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.idan.pokemon_hub.model.Pokemon
@@ -56,33 +55,28 @@ class PokemonInitializer(
             val pokedex: List<PokemonDTO> = jacksonObjectMapper()
                 .readValue(inputStream, jacksonTypeRef<List<PokemonDTO>>())
 
-            val pokemons = pokedex.mapNotNull { entry ->
-                if (entry.name.english.isBlank() || entry.type.isEmpty()) {
-                    logger.warn("Skipping Pokémon ${entry.pokedex} due to empty name")
-                    null
-                } else {
-                    val image = PokemonImage(
-                        imageUrl = try {
-                            URI(entry.image.hires).toURL()
-                        } catch (e: Exception) {
-                            logger.warn("Invalid URL for Pokémon ${entry.pokedex}: ${entry.image.hires}")
-                            URI("https://example.com/default.png").toURL()
-                        }
-                    )
+            val pokemons = pokedex.take(151).map { entry ->
+                val image = PokemonImage(
+                    imageUrl = try {
+                        URI(entry.image.hires).toURL()
+                    } catch (e: Exception) {
+                        logger.warn("Invalid URL for Pokémon ${entry.pokedex}: ${entry.image.hires}")
+                        URI("https://example.com/default.png").toURL()
+                    }
+                )
 
-                    Pokemon(
-                        name = entry.name.english,
-                        type = entry.type.mapNotNull { typeName ->
-                            try {
-                                PokemonType.valueOf(typeName.uppercase())
-                            } catch (e: IllegalArgumentException) {
-                                logger.warn("Unknown type '${typeName}' for Pokémon ${entry.pokedex}")
-                                null
-                            }
-                        }.toSet(),
-                        image = image
-                    )
-                }
+                Pokemon(
+                    name = entry.name.english,
+                    type = entry.type.mapNotNull { typeName ->
+                        try {
+                            PokemonType.valueOf(typeName.uppercase())
+                        } catch (e: IllegalArgumentException) {
+                            logger.warn("Unknown type '${typeName}' for Pokémon ${entry.pokedex}")
+                            null
+                        }
+                    }.toSet(),
+                    image = image
+                )
             }
 
             pokemonRepository.saveAll(pokemons)
