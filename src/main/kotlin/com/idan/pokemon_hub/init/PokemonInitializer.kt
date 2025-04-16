@@ -36,21 +36,19 @@ class PokemonInitializer(private val pokemonRepository: PokemonRepository) {
         }
     }
 
-    // helper DTOs
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class PokemonDTO(
-        val id: Long, val name: Name, val type: List<String>, val image: Image
+        val id: Long, val name: NameDTO, val type: List<String>, val image: ImageDTO
     )
 
-    data class Name(
+    data class NameDTO(
         val english: String = "", val japanese: String? = null, val chinese: String? = null, val french: String? = null
     )
 
-    data class Image(
+    data class ImageDTO(
         val hires: String = "", val sprite: String? = null, val thumbnail: String? = null
     )
 
-    // helper methods
     private fun loadPokemonData(): List<PokemonDTO> {
         return try {
             val inputStream = ClassPathResource("Pokedex.json").inputStream
