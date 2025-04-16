@@ -8,8 +8,7 @@ import java.net.URL
 @Table(name = "pokemon_image")
 data class PokemonImage(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val pokedex: Long = 0,
+    var pokedex: Long = 0,
 
     @Column(name = "image_url", nullable = false)
     var imageUrl: URL = URI("https://example.com/default.png").toURL()

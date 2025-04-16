@@ -28,9 +28,11 @@ class PokemonPersistenceTest {
     fun `should save pokemon and cascade to pokemon image`() {
         // given
         val pokemon = Pokemon(
+            pokedex = 999L,
             name = "Pikachu",
             type = setOf(PokemonType.ELECTRIC),
             image = PokemonImage(
+                pokedex = 999L,
                 imageUrl = URI("https://example.com/pikachu.png").toURL()
             )
         )
@@ -39,11 +41,13 @@ class PokemonPersistenceTest {
         pokemonRepository.save(pokemon)
 
         // then
-        val savedPokemon = pokemonRepository.findById(1L).get()
+        val savedPokemon = pokemonRepository.findById(999L).get()
         assertThat(savedPokemon.image).isNotNull
         assertThat(savedPokemon.image.imageUrl.toString()).isEqualTo("https://example.com/pikachu.png")
 
         val savedImage = pokemonImageRepository.findById(savedPokemon.image.pokedex).get()
         assertThat(savedImage.imageUrl.toString()).isEqualTo("https://example.com/pikachu.png")
+
+        pokemonRepository.deleteAll()
     }
 }

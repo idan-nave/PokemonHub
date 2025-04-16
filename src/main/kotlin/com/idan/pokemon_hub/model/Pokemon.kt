@@ -6,8 +6,7 @@ import jakarta.persistence.*
 @Table(name = "pokemon")
 data class Pokemon(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val pokedex: Long = 0,
+    var pokedex: Long = 0,
 
     var name: String = "",
 
@@ -17,9 +16,9 @@ data class Pokemon(
         name = "pokemon_types",
         joinColumns = [JoinColumn(name = "pokedex")]
     )
-    var type: Set<PokemonType> = emptySet(),
+    var type: Set<PokemonType> = mutableSetOf(),
 
-    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-    @JoinColumn(name = "image_pokedex", referencedColumnName = "pokedex")
-    var image: PokemonImage = PokemonImage() // Use no-arg constructor for default
+    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, orphanRemoval = true)
+    @JoinColumn(name = "image_pokedex")
+    var image: PokemonImage = PokemonImage()
 )
