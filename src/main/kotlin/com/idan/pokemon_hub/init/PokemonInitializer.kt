@@ -20,7 +20,6 @@ import java.net.URI
 class PokemonInitializer(private val pokemonRepository: PokemonRepository) {
     private val logger = LoggerFactory.getLogger(PokemonInitializer::class.java)
 
-    @Transactional
     fun initializePokemonData() {
         try {
             if (pokemonRepository.count() > 0) {
