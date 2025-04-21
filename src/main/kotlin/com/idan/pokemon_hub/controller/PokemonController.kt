@@ -2,12 +2,31 @@ package com.idan.pokemon_hub.controller
 
 import com.idan.pokemon_hub.model.Pokemon
 import com.idan.pokemon_hub.service.PokemonService
+import org.springframework.http.HttpMethod
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/pokemons")
 class PokemonController(private val pokemonService: PokemonService) {
+
+    @RequestMapping(value = ["/"], method = [RequestMethod.OPTIONS])
+    fun optionsAll(): ResponseEntity<String> {
+        val msg = "The available method for all Pokémons is: GET (retrieve)."
+        return ResponseEntity
+            .ok()
+            .allow(HttpMethod.GET)
+            .body(msg)
+    }
+
+    @RequestMapping(value = ["/{pokedex}"], method = [RequestMethod.OPTIONS])
+    fun optionsSingular(@PathVariable pokedex: Long): ResponseEntity<String> {
+        val msg = "The available methods for a specific Pokémon are: GET (retrieve), PUT (update), DELETE (delete)."
+        return ResponseEntity
+            .ok()
+            .allow(HttpMethod.GET, HttpMethod.PUT, HttpMethod.DELETE)
+            .body(msg)
+    }
 
     @GetMapping
     fun getAll(): List<Pokemon> {
