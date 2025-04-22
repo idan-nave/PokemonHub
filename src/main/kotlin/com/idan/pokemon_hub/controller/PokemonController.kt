@@ -2,7 +2,6 @@ package com.idan.pokemon_hub.controller
 
 import com.idan.pokemon_hub.model.Pokemon
 import com.idan.pokemon_hub.service.PokemonService
-import org.springframework.http.HttpMethod
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
