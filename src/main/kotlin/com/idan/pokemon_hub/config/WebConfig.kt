@@ -12,7 +12,7 @@ class WebConfig : WebMvcConfigurer {
             .allowedMethods("GET", "OPTIONS")
             .allowedHeaders("*")
 
-        registry.addMapping("/pokemons/**")
+        registry.addMapping("/pokemons/{pokedex:[0-9]+}")
             .allowedOrigins("http://localhost:5173")
             .allowedMethods("GET", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
