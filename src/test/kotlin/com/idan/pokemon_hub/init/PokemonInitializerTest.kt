@@ -14,7 +14,6 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.test.context.ActiveProfiles
 import java.net.URI
 
-@ActiveProfiles("dataTest")
 @SpringBootTest
 class PokemonInitializerTest {
 

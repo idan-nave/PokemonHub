@@ -11,12 +11,13 @@ import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ClassPathResource
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import java.io.IOException
 import java.net.URI
+import java.net.URISyntaxException
 
 @Service
-@Profile("!dataTest")
 class PokemonInitializer(private val pokemonRepository: PokemonRepository) {
     private val logger = LoggerFactory.getLogger(PokemonInitializer::class.java)
 
@@ -29,7 +30,10 @@ class PokemonInitializer(private val pokemonRepository: PokemonRepository) {
             val pokedex = loadPokemonData()
             val pokemons = processPokemonData(pokedex)
             savePokemons(pokemons)
-        } catch (e: Exception) {
+        } catch (e: IllegalStateException) {
+            logger.error("Failed to process Pokémon data: ${e.message}", e)
+            throw RuntimeException("Initialization failed", e)
+        } catch (e: RuntimeException) {
             logger.error("Failed to initialize Pokémon data: ${e.message}", e)
             throw RuntimeException("Initialization failed", e)
         }
@@ -79,7 +83,7 @@ class PokemonInitializer(private val pokemonRepository: PokemonRepository) {
                 pokedex = entry.id,
                 imageUrl = URI(entry.image.hires).toURL()
             )
-        } catch (e: Exception) {
+        } catch (e: URISyntaxException) {
             logger.warn("Invalid URL for Pokémon image: ${entry.image.hires}")
             PokemonImage(
                 pokedex = entry.id,
@@ -112,7 +116,10 @@ class PokemonInitializer(private val pokemonRepository: PokemonRepository) {
         try {
             pokemonRepository.saveAll(pokemons)
             logger.info("Successfully initialized ${pokemons.size} Pokémon.")
-        } catch (e: Exception) {
+        } catch (e:  IllegalArgumentException) {
+            logger.error("Failed to process Pokémon data: ${e.message}", e)
+            throw RuntimeException("Failed to save Pokémon data", e)
+        } catch (e: OptimisticLockingFailureException){
             logger.error("Failed to save Pokémon data: ${e.message}", e)
             throw RuntimeException("Failed to save Pokémon data", e)
         }
